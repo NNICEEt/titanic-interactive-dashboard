@@ -19,6 +19,7 @@ export function getSurvivalRateBySex(data: Passenger[]) {
     sex,
     rate: total ? survived / total : 0,
     total,
+    survived,
   }));
 }
 
@@ -34,6 +35,7 @@ export function getSurvivalRateByClass(data: Passenger[]) {
     pclass: Number(cls),
     rate: total ? survived / total : 0,
     total,
+    survived,
   }));
 }
 
@@ -71,6 +73,7 @@ export function getEmbarkedSurvival(data: Passenger[]) {
       embarked,
       rate: total ? survived / total : 0,
       total,
+      survived,
     }));
 }
 
@@ -79,7 +82,7 @@ export function getFamilySurvival(data: Passenger[]) {
   // Group by (sibsp + parch + 1) size to include the passenger
   const grouped: Record<number, { survived: number; total: number }> = {};
   data.forEach((p) => {
-    const familySize = (p.sibsp ?? 0) + (p.parch ?? 0) + 1;
+    const familySize = (p.sibsp ?? 0) + (p.parch ?? 0);
     if (!grouped[familySize]) grouped[familySize] = { survived: 0, total: 0 };
     grouped[familySize].total++;
     if (p.survived === 1) grouped[familySize].survived++;
@@ -89,6 +92,7 @@ export function getFamilySurvival(data: Passenger[]) {
       familySize: Number(size),
       rate: total ? survived / total : 0,
       total,
+      survived,
     }))
     .filter((item) => item.rate > 0) // Filter out families with 0% survival rate
     .sort((a, b) => a.familySize - b.familySize); // Sort by family size

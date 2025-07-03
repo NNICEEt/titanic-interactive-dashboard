@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import ResponsiveContainer from "@/components/layout/responsive-container";
 import {
@@ -36,6 +38,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gender, setGender] = useState<"all" | "male" | "female">("all");
+  const [displayType, setDisplayType] = useState<"percentage" | "count">(
+    "percentage"
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -103,6 +108,16 @@ function App() {
             <SelectItem value="female">หญิง</SelectItem>
           </SelectContent>
         </Select>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="display-type-switch"
+            checked={displayType === "count"}
+            onCheckedChange={(checked) =>
+              setDisplayType(checked ? "count" : "percentage")
+            }
+          />
+          <Label htmlFor="display-type-switch">แสดงเป็นจำนวน</Label>
+        </div>
       </div>
       <ResponsiveContainer>
         <Card>
@@ -131,7 +146,10 @@ function App() {
           </CardHeader>
           <CardContent className="h-[250px] flex flex-col">
             <div className="flex-grow">
-              <SurvivalByClassChart data={survivalByClassData} />
+              <SurvivalByClassChart
+                data={survivalByClassData}
+                displayType={displayType}
+              />
             </div>
             <div className="flex-shrink-0">
               <CommentSection storageKey="comments-survival-class" />
@@ -145,7 +163,10 @@ function App() {
           </CardHeader>
           <CardContent className="h-[250px] flex flex-col">
             <div className="flex-grow">
-              <SurvivalBySexChart data={survivalBySexData} />
+              <SurvivalBySexChart
+                data={survivalBySexData}
+                displayType={displayType}
+              />
             </div>
             <div className="flex-shrink-0">
               <CommentSection storageKey="comments-survival-sex" />
@@ -159,7 +180,10 @@ function App() {
           </CardHeader>
           <CardContent className="h-[250px] flex flex-col">
             <div className="flex-grow">
-              <EmbarkedSurvivalChart data={embarkedSurvivalData} />
+              <EmbarkedSurvivalChart
+                data={embarkedSurvivalData}
+                displayType={displayType}
+              />
             </div>
             <div className="flex-shrink-0">
               <CommentSection storageKey="comments-embarked" />
@@ -175,7 +199,10 @@ function App() {
           </CardHeader>
           <CardContent className="h-[250px] flex flex-col">
             <div className="flex-grow">
-              <FamilySurvivalChart data={familySurvivalData} />
+              <FamilySurvivalChart
+                data={familySurvivalData}
+                displayType={displayType}
+              />
             </div>
             <div className="flex-shrink-0">
               <CommentSection storageKey="comments-family" />
