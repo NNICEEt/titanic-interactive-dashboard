@@ -1,27 +1,41 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "./components/layout/DashboardLayout";
-import ResponsiveContainer from "./components/layout/ResponsiveContainer";
-import Card from "./components/design-system/Card";
-import CommentSection from "./components/comments/CommentSection";
-import SurvivalRateChart from "./components/charts/SurvivalRateChart";
-import SurvivalBySexChart from "./components/charts/SurvivalBySexChart";
-import SurvivalByClassChart from "./components/charts/SurvivalByClassChart";
-import AgeDistributionChart from "./components/charts/AgeDistributionChart";
-import EmbarkedSurvivalChart from "./components/charts/EmbarkedSurvivalChart";
-import FamilySurvivalChart from "./components/charts/FamilySurvivalChart";
-import { parseTitanicCSV, type Passenger } from "./utils/csv";
+import DashboardLayout from "@/components/layout/dashboard-layout";
+import ResponsiveContainer from "@/components/layout/responsive-container";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import CommentSection from "@/components/comments/comment-section";
+import SurvivalRateChart from "@/components/charts/survival-rate-chart";
+import SurvivalBySexChart from "@/components/charts/survival-by-sex-chart";
+import SurvivalByClassChart from "@/components/charts/survival-by-class-chart";
+import AgeDistributionChart from "@/components/charts/age-distribution-chart";
+import EmbarkedSurvivalChart from "@/components/charts/embarked-survival-chart";
+import FamilySurvivalChart from "@/components/charts/family-survival-chart";
+import { parseTitanicCSV, type Passenger } from "@/utils/csv";
 import {
   getSurvivalRateBySex,
   getSurvivalRateByClass,
   getAgeDistribution,
   getEmbarkedSurvival,
   getFamilySurvival,
-} from "./utils/dataTransform";
+} from "@/utils/data-transform";
 
 function App() {
   const [data, setData] = useState<Passenger[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [gender, setGender] = useState<"all" | "male" | "female">("all");
 
   useEffect(() => {
     setLoading(true);
@@ -41,7 +55,7 @@ function App() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-[60vh] text-xl text-gray-400">
-          Loading data...
+          กำลังโหลดข้อมูล...
         </div>
       </DashboardLayout>
     );
@@ -50,53 +64,137 @@ function App() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-[60vh] text-xl text-red-500">
-          {error}
+          ไม่สามารถโหลดข้อมูล Titanic ได้
         </div>
       </DashboardLayout>
     );
   }
 
   // Data for each chart
-  const survived = data.filter((p) => p.survived === 1).length;
-  const total = data.length;
-  const bySex = getSurvivalRateBySex(data);
-  const byClass = getSurvivalRateByClass(data);
-  const ageDist = getAgeDistribution(data);
-  const embarked = getEmbarkedSurvival(data);
-  const family = getFamilySurvival(data);
+  const survivedCount = data.filter((p) => p.survived === 1).length;
+  const totalPassengers = data.length;
+  const survivalBySexData = getSurvivalRateBySex(data);
+  // Filter for gender (affects Survival by Class and Age Distribution)
+  const filteredData =
+    gender === "all" ? data : data.filter((p) => p.sex === gender);
+  const survivalByClassData = getSurvivalRateByClass(filteredData);
+  const ageDistributionData = getAgeDistribution(filteredData);
+  const embarkedSurvivalData = getEmbarkedSurvival(filteredData);
+  const familySurvivalData = getFamilySurvival(data);
 
   return (
     <DashboardLayout>
+      <div className="mb-4 flex items-center gap-2">
+        <label htmlFor="gender-filter" className="text-sm font-medium">
+          กรองตามเพศ:
+        </label>
+        <Select
+          value={gender}
+          onValueChange={(value) =>
+            setGender(value as "all" | "male" | "female")
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="เลือกเพศ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">ทั้งหมด</SelectItem>
+            <SelectItem value="male">ชาย</SelectItem>
+            <SelectItem value="female">หญิง</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <ResponsiveContainer>
-        {/* Survival Rate */}
-        <Card title="Survival Rate">
-          <SurvivalRateChart survived={survived} total={total} />
-          <CommentSection storageKey="comments-survival-rate" />
+        <Card>
+          <CardHeader>
+            <CardTitle>อัตราการรอดชีวิตโดยรวม</CardTitle>
+            <CardDescription>
+              เปอร์เซ็นต์ของผู้โดยสารที่รอดชีวิต
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[250px] flex flex-col">
+            <div className="flex-grow">
+              <SurvivalRateChart
+                survived={survivedCount}
+                total={totalPassengers}
+              />
+            </div>
+            <div className="flex-shrink-0">
+              <CommentSection storageKey="comments-survival-rate" />
+            </div>
+          </CardContent>
         </Card>
-        {/* Survival by Sex */}
-        <Card title="Survival by Sex">
-          <SurvivalBySexChart data={bySex} />
-          <CommentSection storageKey="comments-survival-sex" />
+        <Card>
+          <CardHeader>
+            <CardTitle>อัตราการรอดชีวิตตามชั้นโดยสาร</CardTitle>
+            <CardDescription>แยกตามชั้นโดยสารของผู้โดยสาร</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[250px] flex flex-col">
+            <div className="flex-grow">
+              <SurvivalByClassChart data={survivalByClassData} />
+            </div>
+            <div className="flex-shrink-0">
+              <CommentSection storageKey="comments-survival-class" />
+            </div>
+          </CardContent>
         </Card>
-        {/* Survival by Class */}
-        <Card title="Survival by Class">
-          <SurvivalByClassChart data={byClass} />
-          <CommentSection storageKey="comments-survival-class" />
+        <Card>
+          <CardHeader>
+            <CardTitle>อัตราการรอดชีวิตตามเพศ</CardTitle>
+            <CardDescription>ตามเพศของผู้โดยสาร</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[250px] flex flex-col">
+            <div className="flex-grow">
+              <SurvivalBySexChart data={survivalBySexData} />
+            </div>
+            <div className="flex-shrink-0">
+              <CommentSection storageKey="comments-survival-sex" />
+            </div>
+          </CardContent>
         </Card>
-        {/* Age Distribution */}
-        <Card title="Age Distribution">
-          <AgeDistributionChart data={ageDist} />
-          <CommentSection storageKey="comments-age-dist" />
+        <Card>
+          <CardHeader>
+            <CardTitle>อัตราการรอดชีวิตตามท่าเรือที่ขึ้นเรือ</CardTitle>
+            <CardDescription>แยกตามท่าเรือที่ผู้โดยสารขึ้นเรือ</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[250px] flex flex-col">
+            <div className="flex-grow">
+              <EmbarkedSurvivalChart data={embarkedSurvivalData} />
+            </div>
+            <div className="flex-shrink-0">
+              <CommentSection storageKey="comments-embarked" />
+            </div>
+          </CardContent>
         </Card>
-        {/* Embarked vs Survival */}
-        <Card title="Embarked vs Survival">
-          <EmbarkedSurvivalChart data={embarked} />
-          <CommentSection storageKey="comments-embarked" />
+        <Card>
+          <CardHeader>
+            <CardTitle>อัตราการรอดชีวิตตามจำนวนสมาชิกในครอบครัว</CardTitle>
+            <CardDescription>
+              แยกตามจำนวนสมาชิกในครอบครัวที่มาด้วย
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[250px] flex flex-col">
+            <div className="flex-grow">
+              <FamilySurvivalChart data={familySurvivalData} />
+            </div>
+            <div className="flex-shrink-0">
+              <CommentSection storageKey="comments-family" />
+            </div>
+          </CardContent>
         </Card>
-        {/* Family (SibSp, Parch) */}
-        <Card title="Family (SibSp, Parch)">
-          <FamilySurvivalChart data={family} />
-          <CommentSection storageKey="comments-family" />
+        <Card>
+          <CardHeader>
+            <CardTitle>การกระจายอายุของผู้โดยสาร</CardTitle>
+            <CardDescription>แยกตามช่วงอายุ</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[250px] flex flex-col">
+            <div className="flex-grow">
+              <AgeDistributionChart data={ageDistributionData} />
+            </div>
+            <div className="flex-shrink-0">
+              <CommentSection storageKey="comments-age-dist" />
+            </div>
+          </CardContent>
         </Card>
       </ResponsiveContainer>
     </DashboardLayout>

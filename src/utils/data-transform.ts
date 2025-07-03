@@ -59,30 +59,37 @@ export function getAgeDistribution(data: Passenger[], binSize = 10) {
 export function getEmbarkedSurvival(data: Passenger[]) {
   const grouped: Record<string, { survived: number; total: number }> = {};
   data.forEach((p) => {
-    if (!grouped[p.embarked]) grouped[p.embarked] = { survived: 0, total: 0 };
-    grouped[p.embarked].total++;
-    if (p.survived === 1) grouped[p.embarked].survived++;
+    const port = p.embarked || "ระบุไม่ได้";
+    if (!grouped[port]) grouped[port] = { survived: 0, total: 0 };
+    grouped[port].total++;
+    if (p.survived === 1) grouped[port].survived++;
   });
-  return Object.entries(grouped).map(([embarked, { survived, total }]) => ({
-    embarked,
-    rate: total ? survived / total : 0,
-    total,
-  }));
+
+  return Object.entries(grouped)
+    .sort((a, b) => b[1].total - a[1].total)
+    .map(([embarked, { survived, total }]) => ({
+      embarked,
+      rate: total ? survived / total : 0,
+      total,
+    }));
 }
 
 // Family (SibSp, Parch) vs Survival
 export function getFamilySurvival(data: Passenger[]) {
-  // Group by (sibsp + parch) size
+  // Group by (sibsp + parch + 1) size to include the passenger
   const grouped: Record<number, { survived: number; total: number }> = {};
   data.forEach((p) => {
-    const familySize = (p.sibsp ?? 0) + (p.parch ?? 0);
+    const familySize = (p.sibsp ?? 0) + (p.parch ?? 0) + 1;
     if (!grouped[familySize]) grouped[familySize] = { survived: 0, total: 0 };
     grouped[familySize].total++;
     if (p.survived === 1) grouped[familySize].survived++;
   });
-  return Object.entries(grouped).map(([size, { survived, total }]) => ({
-    familySize: Number(size),
-    rate: total ? survived / total : 0,
-    total,
-  }));
+  return Object.entries(grouped)
+    .map(([size, { survived, total }]) => ({
+      familySize: Number(size),
+      rate: total ? survived / total : 0,
+      total,
+    }))
+    .filter((item) => item.rate > 0) // Filter out families with 0% survival rate
+    .sort((a, b) => a.familySize - b.familySize); // Sort by family size
 }

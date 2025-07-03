@@ -10,7 +10,7 @@ const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   className = "",
 }) => (
   <div
-    className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full ${className}`}
+    className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 w-full ${className}`}
   >
     {children}
   </div>
