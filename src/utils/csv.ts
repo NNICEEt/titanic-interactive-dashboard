@@ -18,25 +18,30 @@ export interface Passenger {
 }
 
 export function parseTitanicCSV(csvText: string): Passenger[] {
-  const { data } = Papa.parse<Passenger>(csvText, {
+  const { data } = Papa.parse(csvText, {
     header: true,
     skipEmptyLines: true,
     dynamicTyping: true,
   });
-  return (data as any[]).map((row) => ({
-    pclass: Number(row.pclass),
-    survived: Number(row.survived),
-    name: row.name,
-    sex: row.sex,
-    age: row.age === "" ? null : Number(row.age),
-    sibsp: Number(row.sibsp),
-    parch: Number(row.parch),
-    ticket: row.ticket,
-    fare: Number(row.fare),
-    cabin: row.cabin,
-    embarked: row.embarked,
-    boat: row.boat,
-    body: row.body,
-    homeDest: row["home.dest"] || row.homeDest,
-  }));
+
+  // Manually cast and clean the data to match the Passenger interface
+  return (data as Record<string, unknown>[]).map(
+    (row) =>
+      ({
+        pclass: Number(row.pclass ?? 0),
+        survived: Number(row.survived ?? 0),
+        name: String(row.name ?? ""),
+        sex: String(row.sex ?? ""),
+        age: row.age ? Number(row.age) : null,
+        sibsp: Number(row.sibsp ?? 0),
+        parch: Number(row.parch ?? 0),
+        ticket: String(row.ticket ?? ""),
+        fare: Number(row.fare ?? 0),
+        cabin: String(row.cabin ?? ""),
+        embarked: String(row.embarked ?? ""),
+        boat: String(row.boat ?? ""),
+        body: String(row.body ?? ""),
+        homeDest: String(row.homeDest ?? ""),
+      } as Passenger)
+  );
 }
