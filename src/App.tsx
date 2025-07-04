@@ -35,7 +35,7 @@ function App() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/src/assets/data/Titanic Dataset.csv")
+    fetch(`${import.meta.env.BASE_URL}titanic-dataset.csv`)
       .then((res) => res.text())
       .then((csv) => {
         setData(parseTitanicCSV(csv));
