@@ -1,5 +1,5 @@
 import React from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface SurvivalRateChartProps {
   survived: number;
@@ -42,6 +42,12 @@ const SurvivalRateChart: React.FC<SurvivalRateChartProps> = ({
                 />
               ))}
             </Pie>
+            <Tooltip
+              formatter={(value: number, name: string) => [
+                `${value} คน`,
+                name,
+              ]}
+            />
             <Legend
               verticalAlign="bottom"
               height={36}

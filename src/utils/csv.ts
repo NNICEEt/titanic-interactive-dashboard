@@ -18,7 +18,7 @@ export interface Passenger {
 }
 
 export function parseTitanicCSV(csvText: string): Passenger[] {
-  const { data } = Papa.parse(csvText, {
+  const { data } = Papa.parse<Passenger>(csvText, {
     header: true,
     skipEmptyLines: true,
     dynamicTyping: true,
