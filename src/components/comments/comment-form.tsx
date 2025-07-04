@@ -16,7 +16,7 @@ const CommentForm: React.FC<CommentFormProps> = ({ onAddComment }) => {
     e.preventDefault();
     if (author.trim() && content.trim()) {
       onAddComment({
-        id: Date.now(),
+        id: String(Date.now()),
         author: author.trim(),
         content: content.trim(),
         timestamp: new Date().toISOString(),
